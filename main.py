@@ -10,6 +10,9 @@ SQL_DIR = BASE_DIR / "sql"
 
 app = FastAPI(title="Ledger API")
 
+app.include_router(cards_router)
+app.include_router(profiles_router)
+
 pool: asyncpg.Pool | None = None
 
 
@@ -48,3 +51,4 @@ async def post_ledger(data: LedgerRequest):
 if __name__ == "__main__":
 
     uvicorn.run(app, host="0.0.0.0", port=10000)
+
