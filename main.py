@@ -1,17 +1,17 @@
+import os
 import asyncpg
 from fastapi import FastAPI
 from pathlib import Path
-from pydantic import BaseModel
-import uvicorn
 
-DB_URL = "postgresql://endgame:7414@localhost:5432/enddb"
-BASE_DIR = Path(__file__).resolve().parent
-SQL_DIR = BASE_DIR / "sql"
+DB_URL = os.environ.get("DATABASE_URL")  # ✅ use Render env var
+SQL_DIR = Path("sql")
 
 app = FastAPI(title="Ledger API")
 
-app.include_router(cards_router)
-app.include_router(profiles_router)
+# make sure these are imported correctly
+# from routers import cards_router, profiles_router
+# app.include_router(cards_router)
+# app.include_router(profiles_router)
 
 pool: asyncpg.Pool | None = None
 
@@ -27,8 +27,8 @@ async def startup():
     pool = await asyncpg.create_pool(DB_URL)
 
     async with pool.acquire() as conn:
-        await run_sql_file(conn, "create_wallet_schema.sql")
-        await run_sql_file(conn, "Seed_wallet.sql")
+        await run_sql_file(conn, "01_schema.sql")
+        await run_sql_file(conn, "02_seed.sql")
 
 
 @app.on_event("shutdown")
@@ -36,19 +36,16 @@ async def shutdown():
     if pool:
         await pool.close()
 
-class LedgerRequest(BaseModel):
-    account_id: str
-    amount: int
+
+@app.get("/")  # ✅ IMPORTANT health check route
+async def root():
+    return {"status": "ok"}
+
 
 @app.post("/ledger")
-async def post_ledger(data: LedgerRequest):
+async def ledger(account_id: str, amount: int):
     async with pool.acquire() as conn:
-        sql = (SQL_DIR / "Wallet_debit.sql").read_text()
-        row = await conn.fetchrow(sql, data.account_id, data.amount)
+        sql = (SQL_DIR / "ledger.sql").read_text()
+        row = await conn.fetchrow(sql, account_id, amount)
         return row["result"]
-
-
-if __name__ == "__main__":
-
-    uvicorn.run(app, host="0.0.0.0", port=10000)
 
