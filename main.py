@@ -5,7 +5,8 @@ from fastapi import FastAPI
 from pathlib import Path
 
 DB_URL = os.environ.get("DATABASE_URL")  # ✅ use Render env var
-SQL_DIR = Path("sql")
+BASE_DIR = Path(__file__).resolve().parent
+SQL_DIR = BASE_DIR / "sql"
 
 app = FastAPI(title="Ledger API")
 
@@ -55,6 +56,4 @@ async def ledger(account_id: str, amount: int):
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))  # required for Render
     uvicorn.run(app, host="0.0.0.0", port=port)
-
-       
 
