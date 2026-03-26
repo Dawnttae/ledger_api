@@ -29,8 +29,9 @@ async def startup():
     pool = await asyncpg.create_pool(DB_URL)
 
     async with pool.acquire() as conn:
-        await run_sql_file(conn, "01_schema.sql")
-        await run_sql_file(conn, "02_seed.sql")
+        await run_sql_file(conn, "create_wallet_schema.sql")
+        await run_sql_file(conn, "Seed_wallet.sql")
+
 
 
 @app.on_event("shutdown")
@@ -43,12 +44,15 @@ async def shutdown():
 async def root():
     return {"status": "ok"}
 
+class LedgerRequest(BaseModel):
+    account_id: str
+    amount: int
 
 @app.post("/ledger")
-async def ledger(account_id: str, amount: int):
+async def post_ledger(data: LedgerRequest):
     async with pool.acquire() as conn:
-        sql = (SQL_DIR / "ledger.sql").read_text()
-        row = await conn.fetchrow(sql, account_id, amount)
+        sql = (SQL_DIR / "Wallet_debit.sql").read_text()
+        row = await conn.fetchrow(sql, data.account_id, data.amount)
         return row["result"]
 
 
