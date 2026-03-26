@@ -1,4 +1,5 @@
 import os
+import uvicorn
 import asyncpg
 from fastapi import FastAPI
 from pathlib import Path
@@ -48,4 +49,12 @@ async def ledger(account_id: str, amount: int):
         sql = (SQL_DIR / "ledger.sql").read_text()
         row = await conn.fetchrow(sql, account_id, amount)
         return row["result"]
+
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 3000))  # required for Render
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
+       
 
