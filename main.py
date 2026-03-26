@@ -3,6 +3,7 @@ import uvicorn
 import asyncpg
 from fastapi import FastAPI
 from pathlib import Path
+from pydantic import BaseModel
 
 DB_URL = os.environ.get("DATABASE_URL")  # ✅ use Render env var
 BASE_DIR = Path(__file__).resolve().parent
