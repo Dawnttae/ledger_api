@@ -41,9 +41,14 @@ async def shutdown():
         await pool.close()
 
 
-@app.get("/")  # ✅ IMPORTANT health check route
-async def root():
-    return {"status": "ok"}
+@app.get("/wallet/{account_id}")
+async def get_wallet(account_id: str):
+    async with pool.acquire() as conn:
+        row = await conn.fetchrow(
+            "SELECT account_id, bal FROM mywallet.wallets WHERE account_id = $1",
+            account_id
+        )
+        return dict(row) if row else {"error": "not found"}
 
 class LedgerRequest(BaseModel):
     account_id: str
@@ -54,11 +59,15 @@ async def post_ledger(data: LedgerRequest):
     async with pool.acquire() as conn:
         sql = (SQL_DIR / "Wallet_debit.sql").read_text()
         row = await conn.fetchrow(sql, data.account_id, data.amount)
-        return row["result"]
 
+        if not row:
+            return {"error": "account not found"}
+
+        return row["result"]
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 3000))  # required for Render
     uvicorn.run(app, host="0.0.0.0", port=port)
+
 
