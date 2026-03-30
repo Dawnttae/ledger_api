@@ -6,4 +6,4 @@ ON CONFLICT (account_id) DO NOTHING;
 INSERT INTO mywallet.wallet_ledger (wallet_id, description, amount, balance_after)
 SELECT id, 'Opening Balance', bal, bal
 FROM mywallet.wallets
-WHERE account_id = 'ACC-001'
+WHERE account_id = 'ACC-001';
