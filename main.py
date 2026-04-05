@@ -21,7 +21,7 @@ pool: asyncpg.Pool | None = None
 
 async def run_sql_file(conn, filename: str):
     sql = (SQL_DIR / filename).read_text()
-     await conn.execute(sql)
+    await conn.execute(sql)
 
 
 @app.on_event("startup")
