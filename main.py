@@ -53,8 +53,10 @@ class LedgerRequest(BaseModel):
 @app.post("/ledger")
 async def post_ledger(data: LedgerRequest):
     async with pool.acquire() as conn:
-        sql = (SQL_DIR / "Wallet_debit.sql").read_text()
-        row = await conn.fetchrow(sql, data.account_id, data.amount,data.bal)
+        seed_sql = (SQL_DIR / "Seed_wallet.sql").read_text()
+        await conn.execute(seed_sql)
+        debit_sql = (SQL_DIR / "Wallet_debit.sql").read_text()
+        row = await conn.fetchrow(debit_sql, data.account_id, data.amount,data.bal)
         return row["result"]
 
 
