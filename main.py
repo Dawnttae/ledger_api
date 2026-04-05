@@ -21,7 +21,7 @@ pool: asyncpg.Pool | None = None
 
 async def run_sql_file(conn, filename: str):
     sql = (SQL_DIR / filename).read_text()
-    await conn.fetchrow(sql)
+     await conn.execute(sql)
 
 
 @app.on_event("startup")
@@ -54,7 +54,7 @@ class LedgerRequest(BaseModel):
 async def post_ledger(data: LedgerRequest):
     async with pool.acquire() as conn:
         sql = (SQL_DIR / "Wallet_debit.sql").read_text()
-        row = await conn.fetchrow(sql, data.account_id, data.amount)
+        row = await conn.fetchrow(sql, data.account_id, data.amount,data.bal)
         return row["result"]
 
 
