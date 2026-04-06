@@ -22,9 +22,9 @@ pool: asyncpg.Pool | None = None
 async def run_sql_file(conn, filename: str,expect_result=False):
     sql = (SQL_DIR / filename).read_text()
     if expect_result:
-    return await conn.fetchrow(sql)
+        return await conn.fetchrow(sql)
     else:
-    await conn.execute(sql)
+        await conn.execute(sql)
 
 @app.on_event("startup")
 async def startup():
