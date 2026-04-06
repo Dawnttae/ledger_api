@@ -19,10 +19,12 @@ app = FastAPI(title="Ledger API")
 pool: asyncpg.Pool | None = None
 
 
-async def run_sql_file(conn, filename: str):
+async def run_sql_file(conn, filename: str,expect_result=False):
     sql = (SQL_DIR / filename).read_text()
+    if expect_result:
+    return await conn.fetchrow(sql)
+else:
     await conn.execute(sql)
-
 
 @app.on_event("startup")
 async def startup():
@@ -45,20 +47,13 @@ async def shutdown():
 async def root():
     return {"status": "ok"}
 
-class LedgerRequest(BaseModel):
-    account_id: str
-    amount: int
-    bal: int
 
 @app.post("/ledger")
-async def post_ledger(data: LedgerRequest):
-    async with pool.acquire() as conn:
-        seed_sql = (SQL_DIR / "Seed_wallet.sql").read_text()
-        await conn.execute(seed_sql)
-        debit_sql = (SQL_DIR / "Wallet_debit.sql").read_text()
-        row = await conn.fetchrow(debit_sql, data.account_id, data.amount,data.bal)
-        return row["result"]
-
+async def post_ledger(account_id: str, amount: int):
+async with pool.acquire() as conn:
+sql = (SQL_DIR / "Wallet_debit.sql").read_text()
+row = await conn.fetchrow(sql, account_id, amount)
+return row["result"]
 
 
 if __name__ == "__main__":
