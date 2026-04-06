@@ -3,7 +3,7 @@ import uvicorn
 import asyncpg
 from fastapi import FastAPI
 from pathlib import Path
-from pydantic import BaseModel
+
 
 DB_URL = os.environ.get("DATABASE_URL")  # ✅ use Render env var
 BASE_DIR = Path(__file__).resolve().parent
@@ -23,7 +23,7 @@ async def run_sql_file(conn, filename: str,expect_result=False):
     sql = (SQL_DIR / filename).read_text()
     if expect_result:
     return await conn.fetchrow(sql)
-else:
+    else:
     await conn.execute(sql)
 
 @app.on_event("startup")
