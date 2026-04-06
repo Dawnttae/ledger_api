@@ -50,10 +50,9 @@ async def root():
 
 @app.post("/ledger")
 async def post_ledger(account_id: str, amount: int):
-  async with pool.acquire() as conn:
-    sql = (SQL_DIR / "Wallet_debit.sql").read_text()
-    row = await conn.fetchrow(sql, account_id, amount)
-    return row["result"]
+    async with pool.acquire() as conn:
+        sql = (SQL_DIR / "Wallet_debit.sql").read_text()
+        return (await conn.fetchrow(sql, account_id, amount))["result"]
 
 
 if __name__ == "__main__":
